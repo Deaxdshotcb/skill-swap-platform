@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-//import api from '../api';
+import api from '../api';
 import styles from './Login.module.css';
 
 const Login = () => {
@@ -11,18 +11,14 @@ const Login = () => {
 
     const onSubmit = async e => {
         e.preventDefault();
-        /*
         try {
             const res = await api.post('/auth/login', formData);
             localStorage.setItem('token', res.data.token);
             navigate('/dashboard');
         } catch (err) {
-            alert('Error logging in');
+            alert('Error logging in. Please check your email and password.');
             console.error(err);
-        }*/
-        console.log("Simulating a successful login...");
-        localStorage.setItem('token', 'fake-jwt-token-for-testing');
-        navigate('/dashboard');
+        }
     };
 
     return (
@@ -30,7 +26,7 @@ const Login = () => {
             <div className={styles.leftPanel}>
                 <div className={styles.marketingBox}>
                     <h1>Skill Swap</h1>
-                    <p>This is Our Marketing Message. Exchange skills and grow together.</p>
+                    <p>Exchange skills and grow together.</p>
                 </div>
             </div>
             <div className={styles.rightPanel}>
@@ -45,6 +41,12 @@ const Login = () => {
                         <input type="password" name="password" placeholder="Password" onChange={onChange} required className={styles.input} />
                         <button type="submit" className={styles.button}>Login</button>
                     </form>
+                    
+                    {/* --- NEW LINK FOR ADMINS --- */}
+                    <div className={styles.adminLink}>
+                        <Link to="/admin/login">Are you an administrator? Login here.</Link>
+                    </div>
+
                 </div>
             </div>
         </div>

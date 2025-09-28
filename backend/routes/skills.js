@@ -1,18 +1,16 @@
-// routes/skills.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
+const db = require('../db');
+const auth = require('../middleware/auth');
 
-// @route   GET api/skills
-// @desc    Get all available skills
-router.get('/', async (req, res) => {
-    try {
-        const [skills] = await pool.query('SELECT * FROM Skill ORDER BY skill_name');
-        res.json(skills);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
+router.get('/', auth, async (req, res) => {
+  try {
+    const [skills] = await db.query('SELECT * FROM skills ORDER BY name');
+    res.json(skills);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
 
 module.exports = router;

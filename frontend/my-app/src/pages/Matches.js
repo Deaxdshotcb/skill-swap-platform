@@ -1,38 +1,46 @@
+import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-// import api from '../api'; // Not needed for testing
 import { Link } from 'react-router-dom';
+import api from '../api';
 import ProfileMatchCard from '../components/ProfileMatchCard';
 import styles from './Matches.module.css';
 
 const Matches = () => {
     const [matches, setMatches] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState(null);
 
-    const findMatches = async () => {
-        // This function is disabled in test mode
-        console.log("Finding new matches is disabled in frontend-only mode.");
-        alert("This feature requires a backend connection.");
+    const fetchExistingMatches = async () => {
+        try {
+            const res = await api.get('/matches');
+            setMatches(res.data);
+        } catch (err) {
+            console.error("Failed to fetch matches", err);
+        }
     };
 
     useEffect(() => {
-        const fetchExistingMatches = () => {
-            // --- THIS IS THE MODIFIED PART ---
-            // The real API call is commented out.
-            /*
-            const res = await api.get('/matches');
-            setMatches(res.data);
-            */
-
-            // We provide a hardcoded list of dummy matches for the UI.
-            const dummyMatches = [
-                { match_id: 1, other_username: 'Alice', other_user_id: 2 },
-                { match_id: 2, other_username: 'Bob', other_user_id: 3 },
-                { match_id: 3, other_username: 'Charlie', other_user_id: 4 },
-            ];
-            setMatches(dummyMatches);
-        };
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = jwtDecode(token);
+            setCurrentUserId(decoded.user.id);
+        }
         fetchExistingMatches();
     }, []);
+
+    const findMatches = async () => {
+        setIsLoading(true);
+        try {
+            const res = await api.post('/matches/find');
+            alert(res.data.msg);
+            // Refresh the list after finding new matches
+            fetchExistingMatches(); 
+        } catch (err) {
+            alert('Could not search for new matches.');
+            console.error(err);
+        }
+        setIsLoading(false);
+    };
 
     return (
         <div className={styles.container}>
@@ -45,17 +53,23 @@ const Matches = () => {
             
             <div className={styles.matchesGrid}>
                 {matches.length > 0 ? (
-                    matches.map(match => (
-                        <Link to={`/chat/${match.match_id}`} key={match.match_id} className={styles.cardLink}>
-                            <ProfileMatchCard 
-                                name={match.other_username}
-                                skills="View Profile"
-                                matchPercent={90}
-                            />
-                        </Link>
-                    ))
+                    matches.map(match => {
+                        const otherUser = match.user1_id === currentUserId
+                            ? { id: match.user2_id, name: match.user2_username }
+                            : { id: match.user1_id, name: match.user1_username };
+
+                        return (
+                            <Link to={`/chat/${match.match_id}`} key={match.match_id} className={styles.cardLink}>
+                                <ProfileMatchCard 
+                                    name={otherUser.name}
+                                    skills="Click to Chat"
+                                    matchPercent={90}
+                                />
+                            </Link>
+                        );
+                    })
                 ) : (
-                    <p>No matches found yet. Create more offers and requests!</p>
+                    <p>No matches found yet. Create more offers and requests, then click "Find New Matches"!</p>
                 )}
             </div>
         </div>

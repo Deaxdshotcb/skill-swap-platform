@@ -1,60 +1,49 @@
-// index.js
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
 const cors = require('cors');
-const pool = require('./db');
-require('dotenv').config();
+const db = require('./db');
 
 const app = express();
 const server = http.createServer(app);
 
-// Initialize Socket.IO
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000", // Your React app's address
-    methods: ["GET", "POST"]
-  }
-});
+const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// API Routes
+// --- API Routes ---
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/skills', require('./routes/skills'));
 app.use('/api/offers', require('./routes/offers'));
 app.use('/api/requests', require('./routes/requests'));
 app.use('/api/matches', require('./routes/matches'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/admin', require('./routes/admin'));
 
-// Socket.IO connection for chat
+// Socket.IO for real-time chat
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  socket.on('join_chat', (matchId) => socket.join(matchId));
 
-  // User joins a chat room based on match_id
-  socket.on('join_room', (matchId) => {
-    socket.join(matchId);
-    console.log(`User ${socket.id} joined room ${matchId}`);
-  });
-
-  // Listen for a message and broadcast it to the room
   socket.on('send_message', async (data) => {
-    const { match_id, sender_id, content } = data;
-    // Save message to database
-    await pool.query(
-      'INSERT INTO Message (match_id, sender_id, content) VALUES (?, ?, ?)',
-      [match_id, sender_id, content]
-    );
-    // Broadcast message to the specific room
-    io.to(match_id).emit('receive_message', data);
-  });
+    try {
+      const { match_id, sender_id, content } = data;
+      const [match] = await db.query('SELECT user1_id, user2_id FROM matches WHERE id = ?', [match_id]);
+      if (!match.length) return; // safety check
+      const receiver_id = match[0].user1_id === sender_id ? match[0].user2_id : match[0].user1_id;
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+      const newMessage = { match_id, sender_id, receiver_id, content };
+      const [result] = await db.query('INSERT INTO messages SET ?', newMessage);
+
+      const [messageRow] = await db.query('SELECT m.*, u.username as sender_username FROM messages m JOIN users u ON m.sender_id = u.id WHERE m.id = ?', [result.insertId]);
+      
+      io.to(match_id).emit('receive_message', messageRow[0]);
+    } catch (error) {
+      console.error('Socket.IO error:', error);
+    }
   });
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+server.listen(PORT, () => console.log(`Backend server started on port ${PORT}`));

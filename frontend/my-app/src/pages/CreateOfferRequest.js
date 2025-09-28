@@ -9,11 +9,16 @@ const CreateOfferRequest = () => {
 
     useEffect(() => {
         const fetchSkills = async () => {
-            const res = await api.get('/skills');
-            setSkills(res.data);
-            if (res.data.length > 0) {
-                setOfferData(prev => ({ ...prev, skill_id: res.data[0].skill_id }));
-                setRequestData({ skill_id: res.data[0].skill_id });
+            try {
+                const res = await api.get('/skills');
+                setSkills(res.data);
+                // Set a default value for the dropdowns once skills are fetched
+                if (res.data.length > 0) {
+                    setOfferData(prev => ({ ...prev, skill_id: res.data[0].id }));
+                    setRequestData({ skill_id: res.data[0].id });
+                }
+            } catch (err) {
+                console.error("Failed to fetch skills", err);
             }
         };
         fetchSkills();
@@ -47,14 +52,12 @@ const CreateOfferRequest = () => {
                     <h3>Offer a Skill</h3>
                     <label>Skill</label>
                     <select className={styles.select} value={offerData.skill_id} onChange={e => setOfferData({...offerData, skill_id: e.target.value})}>
-                        {skills.map(skill => <option key={skill.skill_id} value={skill.skill_id}>{skill.skill_name}</option>)}
+                        {/* CORRECTED: skill.id and skill.name */}
+                        {skills.map(skill => <option key={skill.id} value={skill.id}>{skill.name}</option>)}
                     </select>
                     <label>Experience Level</label>
                     <select className={styles.select} value={offerData.experience_level} onChange={e => setOfferData({...offerData, experience_level: e.target.value})}>
-                        <option>Beginner</option>
-                        <option>Intermediate</option>
-                        <option>Advanced</option>
-                        <option>Expert</option>
+                        <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
                     </select>
                     <button type="submit" className={styles.button}>Create Offer</button>
                 </form>
@@ -63,7 +66,8 @@ const CreateOfferRequest = () => {
                     <h3>Request a Skill</h3>
                     <label>Skill</label>
                     <select className={styles.select} value={requestData.skill_id} onChange={e => setRequestData({skill_id: e.target.value})}>
-                        {skills.map(skill => <option key={skill.skill_id} value={skill.skill_id}>{skill.skill_name}</option>)}
+                        {/* CORRECTED: skill.id and skill.name */}
+                        {skills.map(skill => <option key={skill.id} value={skill.id}>{skill.name}</option>)}
                     </select>
                     <button type="submit" className={styles.button}>Create Request</button>
                 </form>
