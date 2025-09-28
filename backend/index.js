@@ -21,6 +21,8 @@ app.use('/api/requests', require('./routes/requests'));
 app.use('/api/matches', require('./routes/matches'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/users', require('./routes/users'));
 
 // Socket.IO for real-time chat
 io.on('connection', (socket) => {

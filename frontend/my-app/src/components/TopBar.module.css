@@ -55,3 +55,11 @@
 .logoutButton:hover {
     background-color: #dc2626;
 }
+
+.profileLink {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+}

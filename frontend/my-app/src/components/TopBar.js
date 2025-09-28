@@ -1,23 +1,18 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom'; // <-- Import Link
 import styles from './TopBar.module.css';
 
-// We now pass in the onLogout function as a prop
 const TopBar = ({ onLogout }) => {
-    const [username, setUsername] = useState("User");
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
-        // Read the username from the token to display it
         const token = localStorage.getItem('token');
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                // Check if it's an admin or user token
-                if (decoded.admin) {
-                    setUsername(decoded.admin.username || 'Admin');
-                } else if (decoded.user) {
-                    setUsername(decoded.user.username || 'User');
-                }
+                // Store the whole user/admin object
+                setCurrentUser(decoded.admin || decoded.user);
             } catch (error) {
                 console.error("Error decoding token in TopBar:", error);
             }
@@ -30,13 +25,18 @@ const TopBar = ({ onLogout }) => {
                 <span>🔍</span> 
                 <input type="text" placeholder="Search" />
             </div>
-            <div className={styles.userDetails}>
-                <span>🔔</span>
-                <span className={styles.username}>{username}</span>
-                <div className={styles.userAvatar}></div>
-                {/* --- NEW LOGOUT BUTTON --- */}
-                <button onClick={onLogout} className={styles.logoutButton}>Logout</button>
-            </div>
+            {/* We only show user details if a user is logged in */}
+            {currentUser && (
+                <div className={styles.userDetails}>
+                    <span>🔔</span>
+                    {/* --- THIS IS NOW A LINK --- */}
+                    <Link to={`/profile/${currentUser.id}`} className={styles.profileLink}>
+                        <span className={styles.username}>{currentUser.username || 'Me'}</span>
+                        <div className={styles.userAvatar}></div>
+                    </Link>
+                    <button onClick={onLogout} className={styles.logoutButton}>Logout</button>
+                </div>
+            )}
         </div>
     );
 };

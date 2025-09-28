@@ -1,27 +1,40 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 import api from '../api';
+import ChatBubble from '../components/ChatBubble'; // <-- Import the new component
 import styles from './Chat.module.css';
 
 const socket = io('http://localhost:5000'); 
 
 const Chat = () => {
     const { matchId } = useParams();
+    const navigate = useNavigate();
     const [message, setMessage] = useState('');
     const [chatHistory, setChatHistory] = useState([]);
+    const [currentUser, setCurrentUser] = useState(null);
     const chatEndRef = useRef(null);
 
-    const token = localStorage.getItem('token');
-    const decodedToken = jwtDecode(token);
-    const currentUserId = decodedToken.user.id;
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                setCurrentUser(decoded.user);
+            } catch (error) {
+                console.error("Invalid token:", error);
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
+        }
+    }, [navigate]);
 
     useEffect(() => {
-        // Join the chat room for this specific match
+        if (!currentUser) return; // Don't run if user isn't set yet
+
         socket.emit('join_chat', matchId);
 
-        // Fetch previous messages
         const fetchMessages = async () => {
             try {
                 const res = await api.get(`/matches/${matchId}/messages`);
@@ -32,14 +45,16 @@ const Chat = () => {
         };
         fetchMessages();
 
-        // Listen for new incoming messages
         socket.on('receive_message', (data) => {
-            setChatHistory(prev => [...prev, data]);
+            // Only add the message if it's not from the current user
+            // to avoid duplicates from optimistic update
+            if (data.sender_id !== currentUser.id) {
+                setChatHistory(prev => [...prev, data]);
+            }
         });
 
-        // Clean up the listener when the component unmounts
         return () => socket.off('receive_message');
-    }, [matchId]);
+    }, [matchId, currentUser]);
 
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -47,21 +62,52 @@ const Chat = () => {
 
     const sendMessage = (e) => {
         e.preventDefault();
-        if (message.trim()) {
+        if (message.trim() && currentUser) {
             const messageData = {
                 match_id: matchId,
-                sender_id: currentUserId,
+                sender_id: currentUser.id,
                 content: message,
             };
             socket.emit('send_message', messageData);
+            
+            // Optimistically add your own message to the chat right away
             setChatHistory(prev => [...prev, { ...messageData, sender_username: 'You' }]);
             setMessage('');
         }
     };
     
+    // --- THIS IS THE MISSING JSX ---
     return (
         <div className={styles.chatContainer}>
-            {/* ... (rest of the JSX is unchanged) ... */}
+            <div className={styles.chatHeader}>
+                <div className={styles.avatar}></div>
+                <div className={styles.userInfo}>
+                    <span className={styles.userName}>Chat Room</span>
+                    <span className={styles.lastSeen}>Online</span>
+                </div>
+                <div className={styles.icons}>📞 📹 ☰</div>
+            </div>
+
+            <div className={styles.chatArea}>
+                {chatHistory.map((msg, index) => (
+                    <ChatBubble 
+                        key={index} 
+                        message={msg.content} 
+                        isSender={msg.sender_id === currentUser?.id} 
+                    />
+                ))}
+                <div ref={chatEndRef} />
+            </div>
+
+            <form className={styles.inputArea} onSubmit={sendMessage}>
+                <input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Type a message..."
+                />
+                <button type="submit">Send</button>
+            </form>
         </div>
     );
 };

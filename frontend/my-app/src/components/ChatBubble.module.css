@@ -1,32 +1,31 @@
 .bubbleContainer {
-  display: flex;
-  margin-bottom: 0.5rem;
+    display: flex;
+    margin-bottom: 10px;
 }
 
 .sender {
-  justify-content: flex-end;
+    justify-content: flex-end; /* Pushes sender's bubbles to the right */
 }
 
 .receiver {
-  justify-content: flex-start;
+    justify-content: flex-start; /* Keeps receiver's bubbles on the left */
 }
 
 .bubble {
-  max-width: 60%;
-  padding: 0.8rem 1rem;
-  border-radius: 18px;
-  margin: 0;
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    word-wrap: break-word;
 }
 
 .sender .bubble {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-bottom-right-radius: 4px;
+    background-color: #2563eb; /* Blue for sender */
+    color: white;
+    border-bottom-right-radius: 4px;
 }
 
 .receiver .bubble {
-  background-color: var(--white);
-  color: var(--text-dark);
-  border: 1px solid var(--border-color);
-  border-bottom-left-radius: 4px;
+    background-color: #e2e8f0; /* Gray for receiver */
+    color: #1e293b;
+    border-bottom-left-radius: 4px;
 }
