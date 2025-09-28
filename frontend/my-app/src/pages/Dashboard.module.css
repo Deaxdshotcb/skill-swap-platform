@@ -1,0 +1,43 @@
+.dashboard {
+    height: 100%;
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.actionButton {
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+    border: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.2s;
+}
+
+.actionButton:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.addSkill { background-color: var(--btn-red); }
+.addBio { background-color: var(--btn-yellow); }
+.offerSkill { background-color: var(--btn-blue); }
+.requestSkill { background-color: var(--btn-purple); }
+
+.matchesContainer h2 {
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+}
+
+.matchesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}

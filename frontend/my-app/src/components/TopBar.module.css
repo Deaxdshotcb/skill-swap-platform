@@ -1,0 +1,42 @@
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  background-color: var(--content-bg);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  margin-left: 0.5rem;
+  font-size: 1rem;
+}
+
+.userDetails {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.username {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.userAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+}

@@ -1,0 +1,83 @@
+.profileContainer {
+  max-width: 800px;
+}
+
+.profileCard {
+  background-color: var(--white);
+  border-radius: 12px;
+  padding: 2rem;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  border: 1px solid var(--border-color);
+  margin-top: 1rem;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.profileInfo h3 {
+  margin: 0 0 0.5rem;
+  color: var(--text-dark);
+}
+
+.level {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.bio {
+  color: var(--text-dark);
+  line-height: 1.6;
+}
+
+.skills {
+  margin-top: 1.5rem;
+}
+
+.skills strong {
+  color: var(--text-dark);
+  margin-right: 0.5rem;
+}
+
+.skills span {
+  color: var(--primary-color);
+}
+
+.reportSection {
+  margin-top: 2rem;
+  background-color: var(--white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.reportSection h3 {
+  margin-top: 0;
+}
+
+.reportInput {
+  width: 100%;
+  min-height: 100px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.reportButton {
+  background-color: var(--btn-red);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+}

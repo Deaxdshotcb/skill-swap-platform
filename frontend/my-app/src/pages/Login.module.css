@@ -1,0 +1,72 @@
+.container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.leftPanel {
+  width: 50%;
+  background-color: var(--primary-color);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.marketingBox {
+  text-align: center;
+}
+
+.rightPanel {
+  width: 50%;
+  background-color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2rem;
+}
+
+.toggleLink {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.toggleLink.active {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-size: 1rem;
+}
+
+.button {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  background-color: var(--primary-color);
+  color: var(--white);
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+}

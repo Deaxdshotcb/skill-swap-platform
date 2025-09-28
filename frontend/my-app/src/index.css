@@ -1,0 +1,29 @@
+:root {
+  --primary-color: #3B82F6; /* Blue */
+  --secondary-color: #60A5FA; /* Lighter Blue */
+  --sidebar-bg: #EBF5FF; /* Very Light Blue for Sidebar */
+  --content-bg: #F8FAFC; /* Light Gray for main content area */
+  --text-dark: #1E293B;
+  --text-light: #64748B;
+  --border-color: #E2E8F0;
+  --white: #FFFFFF;
+  
+  --btn-red: #F87171;
+  --btn-yellow: #FBBF24;
+  --btn-blue: #60A5FA;
+  --btn-purple: #A78BFA;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--content-bg);
+}
+
+* {
+  box-sizing: border-box;
+}

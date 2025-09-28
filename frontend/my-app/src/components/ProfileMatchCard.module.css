@@ -1,0 +1,41 @@
+.card {
+  background-color: var(--white);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+}
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  margin: 0 auto 0.5rem;
+}
+.level {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+}
+.name {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+}
+.skills, .match {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin: 0.3rem 0;
+}
+.requestButton {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.5rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+}
