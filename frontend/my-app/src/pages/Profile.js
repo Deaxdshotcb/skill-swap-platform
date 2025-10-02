@@ -2,6 +2,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
+import Avatar from '../components/Avatar'; // Import the Avatar component
 import styles from './Profile.module.css';
 
 const Profile = () => {
@@ -62,6 +63,7 @@ const Profile = () => {
         if (!offerData.skill_id) return alert('Please select a skill to offer.');
         await api.post('/offers', offerData);
         alert('Offer created!');
+        // Ideally, you would refresh the profile data here to show the new offer
     };
     
     const handleRequestSubmit = async (e) => {
@@ -98,7 +100,7 @@ const Profile = () => {
         <div className={styles.profileContainer}>
             {/* --- PROFILE CARD (VIEW/EDIT) --- */}
             <div className={styles.profileCard}>
-                <div className={styles.avatar}></div>
+                <Avatar username={profileData.username} size={100} />
                 {isEditing ? (
                     <form onSubmit={handleProfileUpdate} className={styles.editForm}>
                         <label>Username</label>

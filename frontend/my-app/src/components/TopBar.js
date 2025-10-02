@@ -1,40 +1,47 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'; // <-- Import Link
+import { Link, useLocation } from 'react-router-dom'; // <-- Import useLocation
+import Avatar from './Avatar';
 import styles from './TopBar.module.css';
 
 const TopBar = ({ onLogout }) => {
     const [currentUser, setCurrentUser] = useState(null);
+    const location = useLocation(); // <-- Get the current page's location
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                // Store the whole user/admin object
                 setCurrentUser(decoded.admin || decoded.user);
             } catch (error) {
                 console.error("Error decoding token in TopBar:", error);
             }
         }
     }, []);
+    const searchVisiblePaths = ['/dashboard', '/matches'];
     
     return (
         <div className={styles.topbar}>
-            <div className={styles.search}>
-                <span>🔍</span> 
-                <input type="text" placeholder="Search" />
-            </div>
-            {/* We only show user details if a user is logged in */}
+            {searchVisiblePaths.includes(location.pathname) && (
+                <div className={styles.search}>
+                    <span>🔍</span> 
+                    <input type="text" placeholder="Search" />
+                </div>
+            )}
+
+            {/* This empty div will take up the space when the search bar is hidden, keeping the user details on the right */}
+            <div className={styles.spacer}></div>
+
             {currentUser && (
                 <div className={styles.userDetails}>
+                    
                     <span>🔔</span>
-                    {/* --- THIS IS NOW A LINK --- */}
-                    <Link to={`/profile/${currentUser.id}`} className={styles.profileLink}>
+                    <Link to={`/profile/me`} className={styles.profileLink}>
                         <span className={styles.username}>{currentUser.username || 'Me'}</span>
-                        <div className={styles.userAvatar}></div>
+                        <Avatar username={currentUser.username} />
                     </Link>
-                    <button onClick={onLogout} className={styles.logoutButton}>Logout</button>
+                    <button onClick={onLogout} className={styles.logoutButton}>Log out</button>
                 </div>
             )}
         </div>

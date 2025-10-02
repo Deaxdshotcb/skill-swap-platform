@@ -1,9 +1,10 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom'; // <-- Import useLocation
 import io from 'socket.io-client';
 import api from '../api';
-import ChatBubble from '../components/ChatBubble'; // <-- Import the new component
+import Avatar from '../components/Avatar'; // <-- Import Avatar
+import ChatBubble from '../components/ChatBubble';
 import styles from './Chat.module.css';
 
 const socket = io('http://localhost:5000'); 
@@ -11,10 +12,14 @@ const socket = io('http://localhost:5000');
 const Chat = () => {
     const { matchId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation(); // <-- Get the location object
     const [message, setMessage] = useState('');
     const [chatHistory, setChatHistory] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const chatEndRef = useRef(null);
+
+    // Get the other user's name from the state passed by the Link in Matches.js
+    const otherUserName = location.state?.otherUserName || 'Chat';
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -31,7 +36,7 @@ const Chat = () => {
     }, [navigate]);
 
     useEffect(() => {
-        if (!currentUser) return; // Don't run if user isn't set yet
+        if (!currentUser) return;
 
         socket.emit('join_chat', matchId);
 
@@ -46,8 +51,6 @@ const Chat = () => {
         fetchMessages();
 
         socket.on('receive_message', (data) => {
-            // Only add the message if it's not from the current user
-            // to avoid duplicates from optimistic update
             if (data.sender_id !== currentUser.id) {
                 setChatHistory(prev => [...prev, data]);
             }
@@ -70,19 +73,23 @@ const Chat = () => {
             };
             socket.emit('send_message', messageData);
             
-            // Optimistically add your own message to the chat right away
-            setChatHistory(prev => [...prev, { ...messageData, sender_username: 'You' }]);
+            const optimisticMessage = {
+                ...messageData,
+                sender_username: 'You',
+                created_at: new Date().toISOString()
+            };
+            setChatHistory(prev => [...prev, optimisticMessage]);
             setMessage('');
         }
     };
     
-    // --- THIS IS THE MISSING JSX ---
     return (
         <div className={styles.chatContainer}>
             <div className={styles.chatHeader}>
-                <div className={styles.avatar}></div>
+                {/* --- MODIFICATIONS HERE --- */}
+                <Avatar username={otherUserName} />
                 <div className={styles.userInfo}>
-                    <span className={styles.userName}>Chat Room</span>
+                    <span className={styles.userName}>{otherUserName}</span>
                     <span className={styles.lastSeen}>Online</span>
                 </div>
                 <div className={styles.icons}>📞 📹 ☰</div>

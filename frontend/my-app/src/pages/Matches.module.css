@@ -21,10 +21,43 @@
 
 .matchesGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    /* This line now sets a max width for the cards, preventing them from stretching too wide */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 200px)); 
     gap: 1.5rem;
+    justify-content: start; /* This is important - it stops the grid from stretching */
 }
 
 .cardLink {
     text-decoration: none;
+    color: inherit;
+}
+
+.cardLink:hover .matchCard {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+
+.matchCard {
+    background: rgb(179, 219, 246);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* This will help center the content vertically */
+    text-align: center;
+    aspect-ratio: 1 / 1; /* This forces the card to be a perfect square */
+}
+
+.matchCard h4 {
+    font-size: 1rem; /* Smaller font size for the name */
+    margin: 0.75rem 0 0.25rem 0;
+}
+
+.matchCard p {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0;
 }

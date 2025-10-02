@@ -1,39 +1,43 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
-import ProfileMatchCard from '../components/ProfileMatchCard';
+import Avatar from '../components/Avatar';
 import styles from './Matches.module.css';
 
 const Matches = () => {
     const [matches, setMatches] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const navigate = useNavigate();
 
     const fetchExistingMatches = async () => {
         try {
             const res = await api.get('/matches');
             setMatches(res.data);
-        } catch (err) {
-            console.error("Failed to fetch matches", err);
-        }
+        } catch (err) { console.error("Failed to fetch matches", err); }
     };
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            const decoded = jwtDecode(token);
-            setCurrentUserId(decoded.user.id);
+            try {
+                const decoded = jwtDecode(token);
+                setCurrentUserId(decoded.user.id);
+            } catch (error) {
+                console.error("Invalid token:", error);
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
         }
         fetchExistingMatches();
-    }, []);
+    }, [navigate]);
 
     const findMatches = async () => {
         setIsLoading(true);
         try {
             const res = await api.post('/matches/find');
             alert(res.data.msg);
-            // Refresh the list after finding new matches
             fetchExistingMatches(); 
         } catch (err) {
             alert('Could not search for new matches.');
@@ -59,12 +63,14 @@ const Matches = () => {
                             : { id: match.user1_id, name: match.user1_username };
 
                         return (
-                            <Link to={`/chat/${match.match_id}`} key={match.match_id} className={styles.cardLink}>
-                                <ProfileMatchCard 
-                                    name={otherUser.name}
-                                    skills="Click to Chat"
-                                    matchPercent={90}
-                                />
+                            // --- MODIFICATION HERE ---
+                            // We now pass the other user's name in the 'state' prop
+                            <Link to={`/chat/${match.match_id}`} state={{ otherUserName: otherUser.name }} key={match.match_id} className={styles.cardLink}>
+                                <div className={styles.matchCard}>
+                                    <Avatar username={otherUser.name} size={50} />
+                                    <h4>{otherUser.name}</h4>
+                                    <p>Click to Chat</p>
+                                </div>
                             </Link>
                         );
                     })
