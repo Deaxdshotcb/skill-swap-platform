@@ -1,8 +1,8 @@
 import { jwtDecode } from 'jwt-decode';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
-import Avatar from '../components/Avatar'; // Import the Avatar component
+import Avatar from '../components/Avatar';
 import styles from './Profile.module.css';
 
 const Profile = () => {
@@ -12,50 +12,47 @@ const Profile = () => {
     const [isOwnProfile, setIsOwnProfile] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     
-    // States for your own forms
     const [skills, setSkills] = useState([]);
     const [offerData, setOfferData] = useState({ skill_id: '', experience_level: 'Beginner' });
     const [requestData, setRequestData] = useState({ skill_id: '' });
     const [reportReason, setReportReason] = useState('');
 
-    useEffect(() => {
-        const loadProfile = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) { navigate('/login'); return; }
-                
-                const decoded = jwtDecode(token);
-                const loggedInUserId = decoded.user?.id; 
-                if (!loggedInUserId) { navigate('/login'); return; }
+    const loadProfile = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) { navigate('/login'); return; }
+            
+            const decoded = jwtDecode(token);
+            const loggedInUserId = decoded.user?.id; 
+            if (!loggedInUserId) { navigate('/login'); return; }
 
-                const viewingOwnProfile = userId === 'me' || loggedInUserId.toString() === userId.toString();
-                setIsOwnProfile(viewingOwnProfile);
+            const viewingOwnProfile = userId === 'me' || loggedInUserId.toString() === userId.toString();
+            setIsOwnProfile(viewingOwnProfile);
 
-                const profileIdToFetch = viewingOwnProfile ? loggedInUserId : userId;
-                const endpoint = viewingOwnProfile ? '/users/me' : `/users/${profileIdToFetch}`;
-                
-                const profileRes = await api.get(endpoint);
-                setProfileData(profileRes.data);
+            const profileIdToFetch = viewingOwnProfile ? loggedInUserId : userId;
+            const endpoint = viewingOwnProfile ? '/users/me' : `/users/${profileIdToFetch}`;
+            
+            const profileRes = await api.get(endpoint);
+            setProfileData(profileRes.data);
 
-                if (viewingOwnProfile) {
-                    const skillsRes = await api.get('/skills');
-                    setSkills(skillsRes.data);
-                }
-            } catch (err) {
-                console.error("Failed to load profile data", err);
+            if (viewingOwnProfile) {
+                const skillsRes = await api.get('/skills');
+                setSkills(skillsRes.data);
             }
-        };
-        loadProfile();
+        } catch (err) {
+            console.error("Failed to load profile data", err);
+        }
     }, [userId, navigate]);
 
-    // --- HANDLER FUNCTIONS ---
+    useEffect(() => {
+        loadProfile();
+    }, [loadProfile]);
+
     const handleProfileUpdate = async (e) => {
         e.preventDefault();
-        try {
-            await api.put('/users/me', { username: profileData.username, bio: profileData.bio });
-            alert('Profile updated!');
-            setIsEditing(false);
-        } catch (err) { alert('Failed to update profile.'); }
+        await api.put('/users/me', { username: profileData.username, bio: profileData.bio });
+        alert('Profile updated!');
+        setIsEditing(false);
     };
     
     const handleOfferSubmit = async (e) => {
@@ -63,29 +60,32 @@ const Profile = () => {
         if (!offerData.skill_id) return alert('Please select a skill to offer.');
         await api.post('/offers', offerData);
         alert('Offer created!');
-        // Ideally, you would refresh the profile data here to show the new offer
+        loadProfile(); 
     };
     
     const handleRequestSubmit = async (e) => {
         e.preventDefault();
         if (!requestData.skill_id) return alert('Please select a skill to request.');
-        await api.post('/requests', requestData);
+        // This should point to your original "wishlist" request route
+        await api.post('/requests', requestData); 
         alert('Request created!');
+        loadProfile();
     };
 
     const handleReportSubmit = async (e) => {
         e.preventDefault();
-        try {
-            await api.post('/reports', { reported_id: userId, reason: reportReason });
-            alert('Report submitted successfully.');
-            setReportReason('');
-        } catch(err) { alert('Failed to submit report.'); }
+        await api.post('/reports', { reported_id: userId, reason: reportReason });
+        alert('Report submitted successfully.');
+        setReportReason('');
     };
 
+    // Original two-way matching logic
     const handleCreateMatch = async (skillIdToRequest) => {
-        if (!window.confirm("This will add this skill to your requests and attempt to create a match. Proceed?")) return;
+        if (!window.confirm("This will add this skill to your requests and attempt to find matches. Proceed?")) return;
         try {
+            // Step 1: Create a general "wishlist" request
             await api.post('/requests', { skill_id: skillIdToRequest });
+            // Step 2: Run the automatic match-finder
             const matchRes = await api.post('/matches/find');
             alert(matchRes.data.msg);
             navigate('/matches');
@@ -96,9 +96,12 @@ const Profile = () => {
     
     if (!profileData) return <div>Loading Profile...</div>;
 
+    const uniqueSkillsOffered = profileData.skills_offered 
+      ? [...new Map(profileData.skills_offered.map(item => [item.id, item])).values()]
+      : [];
+
     return (
         <div className={styles.profileContainer}>
-            {/* --- PROFILE CARD (VIEW/EDIT) --- */}
             <div className={styles.profileCard}>
                 <Avatar username={profileData.username} size={100} />
                 {isEditing ? (
@@ -106,7 +109,7 @@ const Profile = () => {
                         <label>Username</label>
                         <input type="text" value={profileData.username} onChange={e => setProfileData({...profileData, username: e.target.value})} />
                         <label>Bio</label>
-                        <textarea value={profileData.bio} onChange={e => setProfileData({...profileData, bio: e.target.value})} />
+                        <textarea value={profileData.bio || ''} onChange={e => setProfileData({...profileData, bio: e.target.value})} />
                         <div className={styles.editActions}>
                             <button type="submit" className={styles.saveButton}>Save Changes</button>
                             <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
@@ -125,17 +128,18 @@ const Profile = () => {
                 )}
             </div>
 
-            {/* --- "CREATE A MATCH" SECTION (Only on OTHERS' profiles) --- */}
             {!isOwnProfile && (
                 <div className={styles.skillsSection}>
                     <h3>Create a Match with {profileData.username}</h3>
                     <p>To create a match, request one of the skills they offer below.</p>
-                    {profileData.skills_offered && profileData.skills_offered.length > 0 ? (
+                    {uniqueSkillsOffered.length > 0 ? (
                         <ul className={styles.skillsList}>
-                            {profileData.skills_offered.map(skill => (
+                            {uniqueSkillsOffered.map(skill => ( 
                                 <li key={skill.id} className={styles.skillItem}>
                                     <span>{skill.name} ({skill.experience_level})</span>
-                                    <button onClick={() => handleCreateMatch(skill.id)}>Request & Match</button>
+                                    <button onClick={() => handleCreateMatch(skill.id)}>
+                                        Request & Match
+                                    </button>
                                 </li>
                             ))}
                         </ul>
@@ -143,7 +147,6 @@ const Profile = () => {
                 </div>
             )}
             
-            {/* --- YOUR FORMS (Only on your own profile) --- */}
             {isOwnProfile && (
                 <div className={styles.formGrid}>
                     <form onSubmit={handleOfferSubmit} className={styles.formCard}>
@@ -169,7 +172,6 @@ const Profile = () => {
                 </div>
             )}
 
-            {/* --- REPORT SECTION (Only on OTHERS' profiles) --- */}
             {!isOwnProfile && (
                 <div className={styles.reportSection}>
                     <h3>Report User</h3>

@@ -1,12 +1,12 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom'; // <-- Import useLocation
+import { Link, useLocation } from 'react-router-dom'; // Import NavLink
 import Avatar from './Avatar';
 import styles from './TopBar.module.css';
 
 const TopBar = ({ onLogout }) => {
     const [currentUser, setCurrentUser] = useState(null);
-    const location = useLocation(); // <-- Get the current page's location
+    const location = useLocation();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -19,6 +19,7 @@ const TopBar = ({ onLogout }) => {
             }
         }
     }, []);
+
     const searchVisiblePaths = ['/dashboard', '/matches'];
     
     return (
@@ -29,13 +30,11 @@ const TopBar = ({ onLogout }) => {
                     <input type="text" placeholder="Search" />
                 </div>
             )}
-
-            {/* This empty div will take up the space when the search bar is hidden, keeping the user details on the right */}
+            
             <div className={styles.spacer}></div>
 
             {currentUser && (
                 <div className={styles.userDetails}>
-                    
                     <span>🔔</span>
                     <Link to={`/profile/me`} className={styles.profileLink}>
                         <span className={styles.username}>{currentUser.username || 'Me'}</span>

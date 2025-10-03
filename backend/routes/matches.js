@@ -3,40 +3,56 @@ const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
 
+// IMPROVED ROUTE: Finds and creates all new matches in a single, efficient query.
 router.post('/find', auth, async (req, res) => {
     const userId = req.user.id;
     try {
-        const [potentialMatches] = await db.query(`
+        // Find all potential two-way matches that DO NOT already exist.
+        const [newPotentialMatches] = await db.query(`
             SELECT
-                so1.user_id AS user1_id, so2.user_id AS user2_id,
-                so1.id AS user1_offer_id, so2.id AS user2_offer_id
+                so1.user_id AS user1_id,
+                so2.user_id AS user2_id,
+                -- We use MIN() here because of the GROUP BY
+                MIN(so1.id) AS user1_offer_id,
+                MIN(so2.id) AS user2_offer_id
             FROM skill_offers so1
             JOIN skill_requests sr1 ON so1.skill_id = sr1.skill_id AND so1.user_id != sr1.user_id
             JOIN skill_offers so2 ON so2.user_id = sr1.user_id
             JOIN skill_requests sr2 ON so2.skill_id = sr2.skill_id AND sr2.user_id = so1.user_id
-            WHERE so1.user_id = ?`, [userId]
+            LEFT JOIN matches m ON 
+                (m.user1_id = so1.user_id AND m.user2_id = so2.user_id) OR
+                (m.user1_id = so2.user_id AND m.user2_id = so1.user_id)
+            WHERE so1.user_id = ? AND m.id IS NULL
+            -- THIS IS THE FIX: Only return one row per unique user pair
+            GROUP BY so1.user_id, so2.user_id`, [userId]
         );
         
-        let newMatchesCount = 0;
-        for (const match of potentialMatches) {
-            const user1 = Math.min(match.user1_id, match.user2_id);
-            const user2 = Math.max(match.user1_id, match.user2_id);
-            const offer1 = user1 === match.user1_id ? match.user1_offer_id : match.user2_offer_id;
-            const offer2 = user2 === match.user1_id ? match.user1_offer_id : match.user2_offer_id;
-
-            const [existing] = await db.query('SELECT id FROM matches WHERE user1_id = ? AND user2_id = ?', [user1, user2]);
-            if (existing.length === 0) {
-                await db.query('INSERT INTO matches (user1_id, user2_id, user1_offer_id, user2_offer_id) VALUES (?, ?, ?, ?)', [user1, user2, offer1, offer2]);
-                newMatchesCount++;
-            }
+        if (newPotentialMatches.length === 0) {
+            return res.json({ msg: "No new matches found." });
         }
-        res.json({ msg: `${newMatchesCount} new matches found!` });
+
+        const matchesToInsert = newPotentialMatches.map(match => {
+            const user1_id = Math.min(match.user1_id, match.user2_id);
+            const user2_id = Math.max(match.user1_id, match.user2_id);
+            const user1_offer_id = user1_id === match.user1_id ? match.user1_offer_id : match.user2_offer_id;
+            const user2_offer_id = user2_id === match.user1_id ? match.user1_offer_id : match.user2_offer_id;
+            return [user1_id, user2_id, user1_offer_id, user2_offer_id];
+        });
+
+        await db.query(
+            'INSERT INTO matches (user1_id, user2_id, user1_offer_id, user2_offer_id) VALUES ?', 
+            [matchesToInsert]
+        );
+
+        res.json({ msg: `${matchesToInsert.length} new matches found!` });
+
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
     }
 });
 
+// NO CHANGES NEEDED: This route is well-implemented.
 router.get('/', auth, async (req, res) => {
     try {
         const [matches] = await db.query(`
@@ -57,6 +73,7 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
+// NO CHANGES NEEDED: This route is well-implemented.
 router.get('/:id/messages', auth, async (req, res) => {
     try {
         const [messages] = await db.query(

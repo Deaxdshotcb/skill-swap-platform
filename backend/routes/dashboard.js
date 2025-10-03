@@ -12,7 +12,7 @@ router.get('/recommendations', auth, async (req, res) => {
                 u.id, 
                 u.username, 
                 u.bio, 
-                GROUP_CONCAT(s.name SEPARATOR ', ') as skills_offered
+                GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') as skills_offered
             FROM users u
             JOIN skill_offers so ON u.id = so.user_id
             JOIN skills s ON so.skill_id = s.id
@@ -37,7 +37,8 @@ router.get('/opportunities', auth, async (req, res) => {
             SELECT 
                 u.id as requester_id, 
                 u.username as requester_name, 
-                GROUP_CONCAT(s.name SEPARATOR ', ') as skills_requested
+                -- THIS IS THE FIX: Added DISTINCT to prevent duplicate skills
+                GROUP_CONCAT(DISTINCT s.name SEPARATOR ', ') as skills_requested
             FROM skill_requests sr
             JOIN users u ON sr.user_id = u.id
             JOIN skills s ON sr.skill_id = s.id

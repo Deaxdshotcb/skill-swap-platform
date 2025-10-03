@@ -1,11 +1,11 @@
 :root {
   --primary-color: #3B82F6; /* Blue */
   --secondary-color: #60A5FA; /* Lighter Blue */
-  --sidebar-bg: #EBF5FF; /* Very Light Blue for Sidebar */
+  --sidebar-bg: #767676; /* Very Light Blue for Sidebar */
   --content-bg: #F8FAFC; /* Light Gray for main content area */
-  --text-dark: #1E293B;
+  --text-dark: #000000;
   --text-light: #64748B;
-  --border-color: #E2E8F0;
+  --border-color: #ffffff;
   --white: #FFFFFF;
   
   --btn-red: #F87171;

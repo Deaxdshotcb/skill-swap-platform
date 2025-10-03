@@ -48,7 +48,9 @@ CREATE TABLE `skill_offers` (
   `experience_level` ENUM('Beginner', 'Intermediate', 'Advanced', 'Expert') NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`skill_id`) REFERENCES `skills`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`skill_id`) REFERENCES `skills`(`id`) ON DELETE CASCADE,
+  -- NEW: Prevents a user from offering the same skill twice
+  UNIQUE KEY `unique_user_skill_offer` (`user_id`, `skill_id`)
 );
 
 -- 'skill_requests' table: Connects a user to a skill they want to learn.
@@ -58,7 +60,9 @@ CREATE TABLE `skill_requests` (
   `skill_id` INT NOT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`skill_id`) REFERENCES `skills`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`skill_id`) REFERENCES `skills`(`id`) ON DELETE CASCADE,
+  -- NEW: Prevents a user from requesting the same skill twice
+  UNIQUE KEY `unique_user_skill_request` (`user_id`, `skill_id`)
 );
 
 -- 'matches' table: Stores a successful two-way match between two users.
