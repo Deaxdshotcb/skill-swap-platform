@@ -17,6 +17,9 @@ const Profile = () => {
     const [requestData, setRequestData] = useState({ skill_id: '' });
     const [reportReason, setReportReason] = useState('');
 
+    const [isAddingNewSkill, setIsAddingNewSkill] = useState(false);
+    const [newSkillName, setNewSkillName] = useState('');
+
     const loadProfile = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
@@ -57,16 +60,39 @@ const Profile = () => {
     
     const handleOfferSubmit = async (e) => {
         e.preventDefault();
-        if (!offerData.skill_id) return alert('Please select a skill to offer.');
-        await api.post('/offers', offerData);
-        alert('Offer created!');
-        loadProfile(); 
+        try {
+            let skillToOfferId;
+
+            if (isAddingNewSkill) {
+                if (!newSkillName.trim()) return alert('Please enter the name for the new skill.');
+                const newSkillRes = await api.post('/skills', { name: newSkillName });
+                skillToOfferId = newSkillRes.data.id;
+            } else {
+                if (!offerData.skill_id) return alert('Please select a skill to offer.');
+                skillToOfferId = offerData.skill_id;
+            }
+
+            await api.post('/offers', {
+                skill_id: skillToOfferId,
+                experience_level: offerData.experience_level
+            });
+
+            alert('Offer created successfully!');
+            
+            setNewSkillName('');
+            setIsAddingNewSkill(false);
+            setOfferData({ skill_id: '', experience_level: 'Beginner' });
+            loadProfile();
+
+        } catch (err) {
+            console.error("Failed to create offer", err);
+            alert('Failed to create offer. The skill may already exist.');
+        }
     };
     
     const handleRequestSubmit = async (e) => {
         e.preventDefault();
         if (!requestData.skill_id) return alert('Please select a skill to request.');
-        // This should point to your original "wishlist" request route
         await api.post('/requests', requestData); 
         alert('Request created!');
         loadProfile();
@@ -79,13 +105,10 @@ const Profile = () => {
         setReportReason('');
     };
 
-    // Original two-way matching logic
     const handleCreateMatch = async (skillIdToRequest) => {
         if (!window.confirm("This will add this skill to your requests and attempt to find matches. Proceed?")) return;
         try {
-            // Step 1: Create a general "wishlist" request
             await api.post('/requests', { skill_id: skillIdToRequest });
-            // Step 2: Run the automatic match-finder
             const matchRes = await api.post('/matches/find');
             alert(matchRes.data.msg);
             navigate('/matches');
@@ -149,21 +172,57 @@ const Profile = () => {
             
             {isOwnProfile && (
                 <div className={styles.formGrid}>
+                    {/* --- UPDATED FORM SECTION --- */}
                     <form onSubmit={handleOfferSubmit} className={styles.formCard}>
                         <h4>Offer a New Skill</h4>
-                        <select onChange={e => setOfferData({...offerData, skill_id: e.target.value})}>
-                            <option value="">-- Select Skill --</option>
-                            {skills.map(skill => <option key={skill.id} value={skill.id}>{skill.name}</option>)}
-                        </select>
-                        <select onChange={e => setOfferData({...offerData, experience_level: e.target.value})}>
-                            <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option>
+                        
+                        <div className={styles.toggleContainer}>
+                            <input 
+                                type="checkbox" 
+                                id="addNewSkill"
+                                checked={isAddingNewSkill}
+                                onChange={e => setIsAddingNewSkill(e.target.checked)}
+                            />
+                            <label htmlFor="addNewSkill">Add a new skill not on the list</label>
+                        </div>
+
+                        {isAddingNewSkill ? (
+                            <input
+                                type="text"
+                                placeholder="Enter new skill name"
+                                value={newSkillName}
+                                onChange={e => setNewSkillName(e.target.value)}
+                                className={styles.formInput}
+                                required
+                            />
+                        ) : (
+                            <select 
+                                onChange={e => setOfferData({...offerData, skill_id: e.target.value})} 
+                                value={offerData.skill_id} 
+                                className={styles.formInput}
+                                required
+                            >
+                                <option value="">-- Select Skill --</option>
+                                {skills.map(skill => <option key={skill.id} value={skill.id}>{skill.name}</option>)}
+                            </select>
+                        )}
+                        
+                        <select 
+                            onChange={e => setOfferData({...offerData, experience_level: e.target.value})} 
+                            value={offerData.experience_level}
+                            className={styles.formInput}
+                        >
+                            <option>Beginner</option>
+                            <option>Intermediate</option>
+                            <option>Advanced</option>
+                            <option>Expert</option>
                         </select>
                         <button type="submit">Create Offer</button>
                     </form>
 
                     <form onSubmit={handleRequestSubmit} className={styles.formCard}>
                         <h4>Request a Skill</h4>
-                        <select onChange={e => setRequestData({skill_id: e.target.value})}>
+                        <select onChange={e => setRequestData({skill_id: e.target.value})} className={styles.formInput}>
                             <option value="">-- Select Skill --</option>
                             {skills.map(skill => <option key={skill.id} value={skill.id}>{skill.name}</option>)}
                         </select>
