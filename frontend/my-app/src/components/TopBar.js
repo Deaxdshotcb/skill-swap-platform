@@ -1,12 +1,11 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom'; // Import NavLink
+import { Link } from 'react-router-dom';
 import Avatar from './Avatar';
 import styles from './TopBar.module.css';
 
 const TopBar = ({ onLogout }) => {
     const [currentUser, setCurrentUser] = useState(null);
-    const location = useLocation();
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -19,18 +18,10 @@ const TopBar = ({ onLogout }) => {
             }
         }
     }, []);
-
-    const searchVisiblePaths = ['/dashboard', '/matches'];
     
     return (
         <div className={styles.topbar}>
-            {searchVisiblePaths.includes(location.pathname) && (
-                <div className={styles.search}>
-                    <span>🔍</span> 
-                    <input type="text" placeholder="Search" />
-                </div>
-            )}
-            
+            {/* This spacer now pushes the user details to the far right */}
             <div className={styles.spacer}></div>
 
             {currentUser && (

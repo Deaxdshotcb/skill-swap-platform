@@ -6,8 +6,28 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+    gap: 1rem; /* Adds space between items when they wrap */
 }
+
+/* --- NEW STYLES FOR THE SEARCH BAR --- */
+.searchInput {
+    flex-grow: 1; /* Allows the search bar to take available space */
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    min-width: 200px; /* Ensures it doesn't get too small */
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: #10b981; /* Use your theme's primary color */
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+/* --- END OF NEW STYLES --- */
+
 
 .findButton {
     background-color: var(--primary-color);
@@ -21,10 +41,9 @@
 
 .matchesGrid {
     display: grid;
-    /* This line now sets a max width for the cards, preventing them from stretching too wide */
     grid-template-columns: repeat(auto-fill, minmax(150px, 200px)); 
     gap: 1.5rem;
-    justify-content: start; /* This is important - it stops the grid from stretching */
+    justify-content: start;
 }
 
 .cardLink {
@@ -46,13 +65,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* This will help center the content vertically */
+    justify-content: center;
     text-align: center;
-    aspect-ratio: 1 / 1; /* This forces the card to be a perfect square */
+    aspect-ratio: 1 / 1;
 }
 
 .matchCard h4 {
-    font-size: 1rem; /* Smaller font size for the name */
+    font-size: 1rem;
     margin: 0.75rem 0 0.25rem 0;
 }
 

@@ -11,11 +11,18 @@ router.get('/me', auth, async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
         const userProfile = userRows[0];
+        
+        // **FIX**: Added 'so.id AS offer_id' to the query
         const [offers] = await db.query(`
-            SELECT s.id, s.name, so.experience_level 
+            SELECT 
+                s.id, 
+                s.name, 
+                so.experience_level,
+                so.id AS offer_id 
             FROM skill_offers so 
             JOIN skills s ON so.skill_id = s.id 
             WHERE so.user_id = ?`, [userId]);
+            
         userProfile.skills_offered = offers;
         res.json(userProfile);
     } catch (err) {
@@ -31,11 +38,18 @@ router.get('/:id', auth, async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
         const userProfile = userRows[0];
+        
+        // **FIX**: Also added 'so.id AS offer_id' here for consistency
         const [offers] = await db.query(`
-            SELECT s.id, s.name, so.experience_level 
+            SELECT 
+                s.id, 
+                s.name, 
+                so.experience_level,
+                so.id AS offer_id
             FROM skill_offers so 
             JOIN skills s ON so.skill_id = s.id 
             WHERE so.user_id = ?`, [req.params.id]);
+
         userProfile.skills_offered = offers;
         res.json(userProfile);
     } catch (err) {

@@ -4,7 +4,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 const adminAuth = require('../middleware/adminAuth');
-
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -25,7 +24,6 @@ router.post('/login', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
 router.get('/reports', adminAuth, async (req, res) => {
     try {
         const [reports] = await db.query(`
@@ -44,7 +42,6 @@ router.get('/reports', adminAuth, async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
 router.post('/users/:id/block', adminAuth, async (req, res) => {
     const { reason } = req.body;
     const user_id_to_block = req.params.id;
@@ -58,5 +55,4 @@ router.post('/users/:id/block', adminAuth, async (req, res) => {
         res.status(500).send('Server error');
     }
 });
-
 module.exports = router;
