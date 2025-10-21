@@ -49,40 +49,60 @@
     color: #94a3b8;
 }
 
-.opportunities {
-    margin-top: 2rem;
+.chatSection {
+    margin-top: 1.5rem;
     border-top: 1px solid #e2e8f0;
     padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Stops content from breaking layout */
+    flex-shrink: 1; /* Allows the section to shrink if needed */
+    min-height: 50px; /* Gives it a minimum height */
 }
 
-.opportunities h5 {
+.chatSection h5 {
     font-size: 0.9rem;
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0 0 1rem 0;
+    flex-shrink: 0;
 }
 
-.opportunityList {
+.chatList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.25rem;
+    overflow-y: auto; /* Makes the list scrollable */
 }
 
-.opportunityItem {
-    font-size: 0.9rem;
-    color: #374151;
+.chatLink {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
     text-decoration: none;
-    padding: 0.5rem;
-    border-radius: 4px;
+    color: #374151;
+    font-weight: 500;
+    font-size: 0.95rem;
     transition: background-color 0.2s;
 }
 
-.opportunityItem:hover {
+.chatLink:hover {
     background-color: #f1f5f9;
 }
 
-.noOpportunities {
+.chatLink span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.noChats {
     font-size: 0.85rem;
     color: #94a3b8;
 }

@@ -135,15 +135,23 @@ const Profile = () => {
     const handleCreateMatch = async (skillIdToRequest) => {
         if (!window.confirm("This will add this skill to your requests and attempt to find matches. Proceed?")) return;
         try {
+            // Step 1: Create the request
             await api.post('/requests', { skill_id: skillIdToRequest });
-            const matchRes = await api.post('/matches/find');
-            alert(matchRes.data.msg);
-            navigate('/matches');
+            
+            // Step 2: Run the match-finding logic in the background
+            // We don't need to wait for its response
+            api.post('/matches/find'); 
+            
+            // Step 3: Show the new "Request Sent" message
+            alert('Request Sent!'); 
+            
+            // Step 4: Navigate to the matches page
+            navigate('/matches'); 
         } catch (err) {
-            alert('Failed to create match. You may already have this request or match.');
+            console.error("Failed to create match/request", err);
+            alert('Failed to send request. You may have already requested this skill.');
         }
     };
-
     if (!profileData) return <div>Loading Profile...</div>;
 
     const uniqueSkillsOffered = profileData.skills_offered ? [...new Map(profileData.skills_offered.map(item => [item.id, item])).values()] : [];
